@@ -3,82 +3,66 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace Assignment2
+class Program
 {
-    class Student
+    static void Main()
     {
-        public int StudentID { get; set; }
-        public string Name { get; set; }
-        public string Course { get; set; }
-        public int Grade { get; set; }
-
-        public Student(int studentID, string name, string course, int grade)
+        // Step 1: Create student objects
+        List<Student> students = new List<Student>()
         {
-            StudentID = studentID;
-            Name = name;
-            Course = course;
-            Grade = grade;
+            new Student(101, "John", "BSIT", 89),
+            new Student(102, "Maria", "BSCS", 92),
+            new Student(103, "Paul", "BSIT", 75),
+            new Student(104, "Ana", "BSCS", 85),
+            new Student(105, "Mark", "BSIT", 90)
+        };
+
+        // Step 2: Write students to students.txt
+        string filePath = "students.txt";
+        using (StreamWriter sw = new StreamWriter(filePath))
+        {
+            foreach (var student in students)
+                sw.WriteLine(student.ToString());
         }
 
-        public override string ToString()
+        Console.WriteLine("students.txt created and data written.\n");
+
+        // Step 3: Read students.txt and convert to List<Student>
+        string[] lines = File.ReadAllLines(filePath);
+        List<Student> studentList = new List<Student>();
+        foreach (var line in lines)
         {
-            return $"{StudentID},{Name},{Course},{Grade}";
+            var parts = line.Split(',');
+            studentList.Add(new Student(
+                int.Parse(parts[0]),
+                parts[1],
+                parts[2],
+                int.Parse(parts[3])
+            ));
         }
-    }
 
-    class Program
-    {
-        static void Main()
-        {
-            string fileName = "students.txt";
+        // Step 4: LINQ queries (Method Syntax)
 
-            // Task 1: Create and write student data
-            List<Student> students = new List<Student>()
-            {
-                new Student(101, "John", "BSIT", 89),
-                new Student(102, "Maria", "BSCS", 92),
-                new Student(103, "Paul", "BSIT", 75),
-                new Student(104, "Ana", "BSCS", 85),
-                new Student(105, "Mark", "BSIT", 90)
-            };
+        // 4a. Students with Grade > 85
+        var highGrades = studentList.Where(s => s.Grade > 85);
+        Console.WriteLine("Students with Grade > 85:");
+        foreach (var s in highGrades)
+            Console.WriteLine($"{s.Name} - {s.Grade}");
 
-            using (StreamWriter writer = new StreamWriter(fileName))
-            {
-                foreach (var s in students)
-                {
-                    writer.WriteLine(s);
-                }
-            }
+        // 4b. Sorted by Grade Descending
+        var sortedGrades = studentList.OrderByDescending(s => s.Grade);
+        Console.WriteLine("\nSorted by Grade (Descending):");
+        foreach (var s in sortedGrades)
+            Console.WriteLine($"{s.Name} - {s.Grade}");
 
-            Console.WriteLine("Student records saved to students.txt\n");
+        // 4c. Only student names
+        var namesOnly = studentList.Select(s => s.Name);
+        Console.WriteLine("\nStudent Names:");
+        foreach (var n in namesOnly)
+            Console.WriteLine(n);
 
-            // Task 2: Read file and use LINQ
-            List<Student> readStudents = File.ReadAllLines(fileName)
-                .Select(line => line.Split(','))
-                .Select(parts => new Student(
-                    int.Parse(parts[0]),
-                    parts[1],
-                    parts[2],
-                    int.Parse(parts[3])
-                ))
-                .ToList();
-
-            Console.WriteLine("Students with Grade > 85:");
-            readStudents.Where(s => s.Grade > 85)
-                        .ToList()
-                        .ForEach(s => Console.WriteLine($"{s.Name} - {s.Grade}"));
-
-            Console.WriteLine("\nSorted by Grade (Descending):");
-            readStudents.OrderByDescending(s => s.Grade)
-                        .ToList()
-                        .ForEach(s => Console.WriteLine($"{s.Name} - {s.Grade}"));
-
-            Console.WriteLine("\nStudent Names:");
-            readStudents.Select(s => s.Name)
-                        .ToList()
-                        .ForEach(name => Console.WriteLine(name));
-
-            Console.WriteLine($"\nAverage Grade: {readStudents.Average(s => s.Grade):F2}");
-        }
+        // 4d. Average Grade
+        var avgGrade = studentList.Average(s => s.Grade);
+        Console.WriteLine($"\nAverage Grade: {avgGrade:F2}");
     }
 }
